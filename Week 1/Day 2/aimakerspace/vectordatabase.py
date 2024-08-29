@@ -1,8 +1,12 @@
 import numpy as np
 from collections import defaultdict
-from typing import List, Tuple, Callable
 from aimakerspace.openai_utils.embedding import EmbeddingModel
 import asyncio
+import requests
+import numpy as np
+from typing import List, Tuple, Callable, Optional, Dict
+from collections import defaultdict
+
 
 
 def cosine_similarity(vector_a: np.array, vector_b: np.array) -> float:
@@ -11,6 +15,12 @@ def cosine_similarity(vector_a: np.array, vector_b: np.array) -> float:
     norm_a = np.linalg.norm(vector_a)
     norm_b = np.linalg.norm(vector_b)
     return dot_product / (norm_a * norm_b)
+
+
+def euclidean_distance(vector_a: np.array, vector_b: np.array) -> float:
+    """Computes the Euclidean distance between two vectors."""
+    return np.linalg.norm(vector_a - vector_b)
+
 
 
 class VectorDatabase:
@@ -25,7 +35,7 @@ class VectorDatabase:
         self,
         query_vector: np.array,
         k: int,
-        distance_measure: Callable = cosine_similarity,
+        distance_measure: Callable = euclidean_distance,
     ) -> List[Tuple[str, float]]:
         scores = [
             (key, distance_measure(query_vector, vector))
@@ -37,7 +47,7 @@ class VectorDatabase:
         self,
         query_text: str,
         k: int,
-        distance_measure: Callable = cosine_similarity,
+        distance_measure: Callable = euclidean_distance,
         return_as_text: bool = False,
     ) -> List[Tuple[str, float]]:
         query_vector = self.embedding_model.get_embedding(query_text)
@@ -52,6 +62,11 @@ class VectorDatabase:
         for text, embedding in zip(list_of_text, embeddings):
             self.insert(text, np.array(embedding))
         return self
+
+
+
+
+
 
 
 if __name__ == "__main__":
